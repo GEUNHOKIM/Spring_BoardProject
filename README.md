@@ -28,9 +28,17 @@
 
 # 4. ❓ Why : 질문과 답변
 **1. 수정, 삭제 API의 request를 어떤 방식으로 사용하셨나요? (param, query, body)**
-+ **수정**에서는 **id**를 **@PathVariable**로 받으므로 **param**방식을 사용했고, 수정내용을 포함 하고 있는 **{title,content,username}**은 **body**를 사용했습니다. 
++ **수정 API**에서는 **id**를 **@PathVariable**로 받으므로 **param**방식을 사용했고, 수정내용을 포함 하고 있는 **{title,content,username}**은 **body**를 사용했습니다. 
++ **삭제 API**에서는 **id**를 **@PathVariable**로 받으므로 **param**방식을 사용했습니다.
 
 **2. 어떤 상황에 어떤 방식의 request를 써야하나요?**
++ **param**
+  + 주소에 포함된 변수를 담는다
+  + 데이터를 식별할때 적절하다.
+    + ex) /api/get/board/1 : 1번 board를 가져온다
+  + 서버에서 @PathVariable로 칭한다 
++ **query**
+  + 
 
 **3. RESTful한 API를 설계했나요? 어떤 부분이 그런가요? 어떤 부분이 그렇지 않나요?**
 
