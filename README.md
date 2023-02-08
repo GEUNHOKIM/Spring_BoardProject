@@ -35,12 +35,17 @@
 + **param**
   + 주소에 포함된 변수를 담는다
   + 데이터를 식별할때 적절하다.
-    + ex) /api/get/board/1 : 1번 board를 가져온다
+    + ex) /api/board/1 : 1번 board를 가져온다
   + 서버에서 @PathVariable로 칭한다 
 + **query**
-  + 
+  + 엔드포인트에서 물음표(?) 뒤에 key=value 형태로 변수를 담는다
+    ex) /api/board/?name="철수"&age=28
+  **body**
+  + URL에 보이지 않는 오브젝트의 데이터들을 담는다.
+  + 객체 자체를 바로 보낼때 적합하다
 
 **3. RESTful한 API를 설계했나요? 어떤 부분이 그런가요? 어떤 부분이 그렇지 않나요?**
+ + Resorce인 Borad를 중심으로 설계를 했고, URI만 보더라도 리소스를 추론할 수 있도록 설계했습니다. 
 
 **4. 적절한 관심사 분리를 적용하였나요? (Controller, Repository, Service)**
 
