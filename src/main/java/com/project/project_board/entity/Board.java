@@ -1,6 +1,7 @@
 package com.project.project_board.entity;
 
 import com.project.project_board.dto.BoardRequestDto;
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -8,38 +9,32 @@ import javax.persistence.*;
 
 @Getter
 @Entity
-@NoArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Board extends Timestamped {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
-    @Column(nullable = false)
-    private String username;
-
-    @Column(nullable = false)
+    @Column(nullable = false, length = 50)
     private String title;
 
-    @Column(nullable = false)
+    @Column(nullable = false, length = 500)
     private String contents;
 
-    @Column(nullable = false)
-    private String password;
+    @ManyToOne
+    @JoinColumn(name = "user_id",nullable = false)
+    private User user;
 
-    public Board(BoardRequestDto requestDto) {
-        this.username = requestDto.getUsername();
+    public Board(BoardRequestDto requestDto, User user) {
         this.title = requestDto.getTitle();
         this.contents = requestDto.getContents();
-        this.password = requestDto.getPassword();
+        this.user = user;
     }
 
-    public void update(BoardRequestDto boardRequestDto) {
-        this.username = boardRequestDto.getUsername();
+    public void update(BoardRequestDto boardRequestDto, User user) {
         this.contents = boardRequestDto.getContents();
         this.title = boardRequestDto.getTitle();
-        this.password = boardRequestDto.getPassword();
+        this.user = user;
     }
-
-
 
 }

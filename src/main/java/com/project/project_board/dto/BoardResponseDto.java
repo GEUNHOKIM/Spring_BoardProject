@@ -2,13 +2,16 @@ package com.project.project_board.dto;
 
 
 import com.project.project_board.entity.Board;
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.time.LocalDateTime;
 
+@Setter
 @Getter
-@NoArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class BoardResponseDto {
     private Long id;
     private String username;
@@ -19,7 +22,7 @@ public class BoardResponseDto {
 
     public BoardResponseDto(Board board) {
         this.id = board.getId();
-        this.username = board.getUsername();
+        this.username = board.getUser().getUsername();
         this.contents = board.getContents();
         this.title = board.getTitle();
         this.createAt = board.getCreatedAt();
