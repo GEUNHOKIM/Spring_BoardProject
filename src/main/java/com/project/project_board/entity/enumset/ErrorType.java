@@ -20,5 +20,4 @@ public enum ErrorType {
         this.msg = msg;
     }
 
-
 }

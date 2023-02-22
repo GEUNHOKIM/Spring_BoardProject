@@ -18,8 +18,8 @@ public class UserController {
     private final UserService userService;
 
     @PostMapping("/signup")
-    public ResponseEntity<Object> signup(@RequestBody @Valid SignupRequestDto signupRequestDto, BindingResult bindingResult) {
-        return userService.signup(signupRequestDto, bindingResult);
+    public ResponseEntity<Object> signup(@RequestBody @Valid SignupRequestDto signupRequestDto) {
+        return userService.signup(signupRequestDto);
 
     }
 

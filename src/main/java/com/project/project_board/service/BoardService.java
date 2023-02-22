@@ -3,67 +3,34 @@ package com.project.project_board.service;
 import com.project.project_board.dto.BoardRequestDto;
 import com.project.project_board.dto.BoardResponseDto;
 import com.project.project_board.entity.Board;
-import com.project.project_board.entity.JwtUtil;
 import com.project.project_board.entity.User;
 import com.project.project_board.entity.UserRoleEnum;
 import com.project.project_board.repository.BoardRepository;
-import com.project.project_board.repository.UserRepository;
-import io.jsonwebtoken.Claims;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.annotation.Secured;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
+@EnableWebSecurity // 스프링 Security 지원을 가능하게 함
 public class BoardService {
 
     private final BoardRepository boardRepository;
-    private final UserRepository userRepository;
-    private final JwtUtil jwtUtil;
 
+    @Secured({"ROLE_USER", "ROLE_ADMIN"})
     @Transactional
-    public BoardResponseDto createBoard(BoardRequestDto boardRequestDto, HttpServletRequest request) {
+    public BoardResponseDto createBoard(BoardRequestDto boardRequestDto, User user) {
 
-        String token = jwtUtil.resolveToken(request);
-        Claims claims;
+        Board board = new Board(boardRequestDto,user);
+        boardRepository.save(board);
+        BoardResponseDto boardResponseDto = new BoardResponseDto(board);
 
-        if(token != null) {
-
-            if(jwtUtil.validateToken(token)) {
-
-                claims = jwtUtil.getUserInfoFromToken(token);
-            } else {
-
-                throw new IllegalArgumentException("Token Error");
-            }
-
-            User user = userRepository.findByUsername(claims.getSubject()).orElseThrow(
-                    () -> new IllegalArgumentException("사용자가 존재하지 않습니다.")
-            );
-
-            UserRoleEnum userRoleEnum = user.getRole();
-
-            if(userRoleEnum == UserRoleEnum.USER) {
-
-                Board board = new Board(boardRequestDto,user);
-                boardRepository.save(board);
-                BoardResponseDto boardResponseDto = new BoardResponseDto(board);
-
-                return boardResponseDto;
-
-            } else {
-
-                throw new IllegalArgumentException("사용자 권한이 없습니다.");
-            }
-
-        } else {
-
-            return null;
-        }
+        return boardResponseDto;
 
     }
 
@@ -81,72 +48,43 @@ public class BoardService {
         return new BoardResponseDto(board);
     }
 
+    @Secured({"ROLE_USER", "ROLE_ADMIN"})
     @Transactional
-    public String selectUpdateBoard(Long id, BoardRequestDto boardRequestDto, HttpServletRequest request) {
+    public BoardResponseDto selectUpdateBoard(Long id, BoardRequestDto boardRequestDto, User user) {
 
-        String token = jwtUtil.resolveToken(request);
-        Claims claims;
+        Optional<Board> board = boardRepository.findById(id);
 
-        if(token != null) {
-
-            if(jwtUtil.validateToken(token)) {
-
-                claims = jwtUtil.getUserInfoFromToken(token);
-            } else {
-
-                throw new IllegalArgumentException("Token Error");
-            }
-
-            User user = userRepository.findByUsername(claims.getSubject()).orElseThrow(
-                    () -> new IllegalArgumentException("사용자가 존재하지 않습니다")
-            );
-
-            UserRoleEnum userRoleEnum = user.getRole();
-
-            Optional<Board> board = boardRepository.findByIdAndUser(id, user);
-
-            if(board.isEmpty() && userRoleEnum == UserRoleEnum.USER) {
-                throw new IllegalArgumentException("일치하는 게시물이 없습니다");
-            }
-
-            board.get().update(boardRequestDto,user);
-
+        if(board.isEmpty()) {
+            throw new IllegalArgumentException("게시글이 없습니다");
         }
 
-        return "저장이 완료되었습니다.";
+        Optional<Board> found = boardRepository.findByIdAndUser(id, user);
+
+        if(found.isPresent() || user.getRole() == UserRoleEnum.ADMIN) {
+            board.get().update(boardRequestDto, user);
+        } else {
+            throw new IllegalArgumentException("유저가 일치하지 않습니다");
+        }
+
+        return new BoardResponseDto(board.get());
     }
 
+    @Secured({"ROLE_USER", "ROLE_ADMIN"})
     @Transactional
-    public String selectDeleteBoard(Long id, HttpServletRequest request) {
+    public String selectDeleteBoard(Long id, User user) {
 
-        String token = jwtUtil.resolveToken(request);
-        Claims claims;
+        Optional<Board> board = boardRepository.findById(id);
 
-        if(token != null) {
+        if(board.isEmpty()) {
+            throw new IllegalArgumentException("게시글이 없습니다");
+        }
 
-            if(jwtUtil.validateToken(token)) {
-                claims = jwtUtil.getUserInfoFromToken(token);
-            } else {
-                throw new IllegalArgumentException("Token Error");
-            }
+        Optional<Board> found = boardRepository.findByIdAndUser(id, user);
 
-            User user = userRepository.findByUsername(claims.getSubject()).orElseThrow(
-                    () -> new IllegalArgumentException("사용자가 존재하지 않습니다")
-            );
-
-            UserRoleEnum userRoleEnum = user.getRole();
-
-            Optional<Board> board = boardRepository.findByIdAndUser(id, user);
-
-            if(board.isEmpty() && userRoleEnum == UserRoleEnum.USER) {
-                throw new IllegalArgumentException("일치하는 게시물이 없습니다");
-            }
-
+        if(found.isPresent() || user.getRole() == UserRoleEnum.ADMIN) {
             boardRepository.deleteById(id);
-
         } else {
-
-            return null;
+            throw new IllegalArgumentException("유저가 일치하지 않습니다");
         }
 
         return "삭제가 완료 되었습니다";
